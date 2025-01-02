@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import *
 import tkinter.filedialog as fd
-from tensorflow.keras.models import model_from_json
+from keras.models import model_from_json, Sequential
 from PIL import Image, ImageTk
 import numpy as np
 import pandas as pd
@@ -10,59 +10,14 @@ import cv2
 import dlib
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-final_data=[]
+
+final_data = []
 
 # Load face detection model
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-# face_detector = dlib.get_frontal_face_detector()
-# landmark_predictor = dlib.shape_predictor('facial-landmarks-recognition/shape_predictor_68_face_landmarks.dat')
-
-# # Load emotion prediction model
-# # TODO: add code to load your trained model
-# def align_face(face):
-#     # Convert face to grayscale
-#     gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
-
-#     # Detect face landmarks
-#     landmarks = landmark_predictor(gray, dlib.rectangle(0, 0, face.shape[0], face.shape[1]))
-
-#     # Define target points for face alignment
-#     target_points = [
-#         (48, 61),  # Mouth
-#         (33, 33),  # Nose
-#         (19, 15),  # Left eye
-#         (28, 15),  # Right eye
-#         (9, 50),   # Left eyebrow
-#         (22, 50)   # Right eyebrow
-#     ]
-
-#     # Extract source and target points from landmarks
-#     src_points = np.float32([(landmarks.part(i).x, landmarks.part(i).y) for i in range(3)])
-#     target_points = np.float32([target_points[i] for i in range(3)])
-
-#     # Compute affine transformation matrix using source and target points
-#     # M = cv2.getAffineTransform(np.float32(src_points), np.float32(target_points))
-#     src_points = np.array(src_points)
-#     target_points = np.array(target_points)
-
-#         # Ensure that the arrays are of the expected shape and data type
-#     assert src_points.shape == (3, 2), "src_points should be a 3x2 array"
-#     assert target_points.shape == (3, 2), "target_points should be a 3x2 array"
-#     assert src_points.dtype == np.float32, "src_points should be of data type np.float32"
-#     assert target_points.dtype == np.float32, "target_points should be of data type np.float32"
-
-#     # Compute the affine transformation matrix
-#     M = cv2.getAffineTransform(src_points, target_points)
-    
-
-#     # Apply affine transformation to face
-#     aligned_face = cv2.warpAffine(face, M, (face.shape[1], face.shape[0]))
-
-#     return aligned_face
-
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 def create_graph():
-    #  Load the CSV file into a pandas dataframe
+    # Load the CSV file into a pandas dataframe
     df = pd.read_csv('report.csv')
 
     # Set the row index as a proxy for time
@@ -113,17 +68,7 @@ def create_graph():
     canvas2.draw()
     canvas2.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-    # # Add a toolbar to each figure
-    # toolbar1 = NavigationToolbar2Tk(canvas1, root)
-    # toolbar1.update()
-    # toolbar1.place(relx=0, rely=1, relwidth=1, anchor='sw')
-
-    # toolbar2 = NavigationToolbar2Tk(canvas2, root)
-    # toolbar2.update()
-    # toolbar2.grid(row=1, column=1)
-
     root.mainloop()
-
 
 def FacialExpressionModel(json_file, weights_file):
     with open(json_file, "r") as file:
@@ -131,26 +76,24 @@ def FacialExpressionModel(json_file, weights_file):
         model = model_from_json(loaded_model_json)
 
     model.load_weights(weights_file)
-    model.compile(optimizer="adam", loss="categorical_crossentropy", metrics = ["accuracy"])
+    model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
 
     return model
 
 def show_Detect_button():
-    detect_b = Button(top, text="Show Report", command=lambda: create_graph(),padx=10,pady=5)
-    detect_b.configure(background="#364156",foreground="white", font=("arial",10,"bold"))
-    detect_b.place(relx=0.79,rely=0.46)
+    detect_b = Button(top, text="Show Report", command=lambda: create_graph(), padx=10, pady=5)
+    detect_b.configure(background="#364156", foreground="white", font=("arial", 10, "bold"))
+    detect_b.place(relx=0.79, rely=0.46)
 
-    
 model = FacialExpressionModel("emotion_model (1).json", "face_emotion_model.h5")
-EMOTIONS_LIST = ["Angry","Disgust","Fear","Happy","Neutral","Sad","Surprise"]
-
+EMOTIONS_LIST = ["Angry", "Disgust", "Fear", "Happy", "Neutral", "Sad", "Surprise"]
 
 top = tk.Tk()
 top.geometry("800x600")
 top.title("Emotion Detection")
 top.configure(background="#CDCDCD")
 
-label1 = Label(top, background="#CDCDCD", font=("arial",15,"bold"))
+label1 = Label(top, background="#CDCDCD", font=("arial", 15, "bold"))
 sign_image = Label(top)
 
 def Detect(faces,gray_image):
@@ -202,13 +145,6 @@ def preprocess_frame(frame):
 
     return frame
 
-
-# def show_Detect_button(file_path):
-#     detect_b = Button(top, text="Detect Emotion", command=lambda: Detect(file_path),padx=10,pady=5)
-#     detect_b.configure(background="#364156",foreground="white", font=("arial",10,"bold"))
-#     detect_b.place(relx=0.79,rely=0.46)
-
-
 def upload_image():
     try:
         file_path = fd.askopenfilename()
@@ -225,7 +161,6 @@ def upload_image():
         # show_Detect_button(file_path)
     except:
         pass
-    
 
 def videoCapture(filepath):
     cap = cv2.VideoCapture(filepath)
@@ -271,7 +206,7 @@ def videoCapture(filepath):
         print(f"Input 2 value: {input2_value}")
 
             # create a list of emotion predictions (for example purposes)
-        pred = ['happy', 'sad', 'neutral', 'happy', 'surprised', 'neutral', 'neutral']
+        pred = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
         # write data to csv file
         with open('report.csv', 'a', newline='') as file:
@@ -285,31 +220,45 @@ def videoCapture(filepath):
 
 
     input1_label = tk.Label(top, text="Enter the lecture ID:")
-    input1_label.place(relx=0.29,rely=0.26)
+    input1_label.place(relx=0.29, rely=0.26)
     input1 = tk.Entry(top)
-    input1.place(relx=0.44,rely=0.26)
+    input1.place(relx=0.44, rely=0.26)
 
     input2_label = tk.Label(top, text="Enter the student ID:")
-    input2_label.place(relx=0.29,rely=0.36)
+    input2_label.place(relx=0.29, rely=0.36)
     input2 = tk.Entry(top)
-    input2.place(relx=0.44,rely=0.36)
+    input2.place(relx=0.44, rely=0.36)
 
     button = tk.Button(top, text="Submit", command=handle_button_click)
-    button.place(relx=0.44,rely=0.46)
-
+    button.place(relx=0.44, rely=0.46)
 
     show_Detect_button()
 
+def start_webcam():
+    cap = cv2.VideoCapture(0)
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        processed_frame = preprocess_frame(frame)
+        cv2.imshow('Real-Time Emotion Detection', processed_frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-
-    
+    cap.release()
+    cv2.destroyAllWindows()
 
 upload = Button(top, text="Upload Video", command=upload_image, padx=10, pady=5)
-upload.configure(background="#364156", foreground="white", font=("arial",25,"bold"))
-upload.pack(side="bottom", pady=50)
+upload.configure(background="#364156", foreground="white", font=("arial", 25, "bold"))
+upload.pack(side="bottom", pady=20)
+
+webcam = Button(top, text="Real-Time Capture", command=start_webcam, padx=10, pady=5)
+webcam.configure(background="#364156", foreground="white", font=("arial", 25, "bold"))
+webcam.pack(side="bottom", pady=20)
+
 sign_image.pack(side="bottom", expand="True")
 label1.pack(side="bottom", expand="True")
-heading = Label(top, text="Emotion Detector", pady=20, font=("arial",25,"bold"))
+heading = Label(top, text="Emotion Detector", pady=20, font=("arial", 25, "bold"))
 heading.configure(background="#CDCDCD", foreground="#364156")
 heading.pack()
 top.mainloop()

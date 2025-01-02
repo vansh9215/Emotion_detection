@@ -48,3 +48,6 @@ plt.show()
 # Classification report
 print("-----------------------------------------------------------------")
 print(classification_report(test_generator.classes, predictions.argmax(axis=1)))
+
+
+
